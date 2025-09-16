@@ -24,5 +24,36 @@
     <p><strong>Nama Toko: </strong>{{ shop_name }}</p>
     <p><strong>Name: </strong>{{ name }}<p>
     <p><strong>Class: </strong>{{ class }}</p>
-<>/body>
+
+    <hr>
+
+    <a href="{% url 'main:add_product' %}">
+        <button>+ Add Product</button>
+    </a>
+
+    <hr>
+
+    {% if not product_list %}
+        <p>Tidak ada produk yang tersedia.</p>
+    {% else %}
+
+        {% for product in product_list %}
+            <div>
+                {% if product.thumbnail %}
+                    <img src="{{ product.thumbnail }}" alt="thumbnail" width="150" height="100">
+                    <br />
+                {% endif %}
+
+                <h3>{{ product.name }}</h3>
+                <p><b>Harga:</b> Rp {{ product.price }}</p>
+
+                <p><a href="{% url 'main:show_description' product.id %}">
+                    <button>Show Details</button>
+                </a></p>
+            </div>
+
+        <hr>    
+        {% endfor %}
+        {% endif %}
+</body>
 </html>
