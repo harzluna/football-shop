@@ -17,5 +17,10 @@
     <p>{{ product.description }}</p>
   </div>
 
+  {% if news.user %}
+    <p>Author: {{ news.user.username }}</p>
+  {% else %}
+    <p>Author: Anonymous</p>
+  {% endif %}
 
 {% endblock content %}

@@ -1,8 +1,11 @@
 from django.db import models
 import uuid
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Product(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
     CATEGORY_CHOICES = [
         ('name', 'Name'),
         ('price', 'Price'),
@@ -22,4 +25,3 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-    
