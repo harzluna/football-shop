@@ -172,4 +172,9 @@ Link PWS: https://haris-azzahra-footballshop.pbp.cs.ui.ac.id/
 
 
 5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
-    a. 
+    a. Implementasi fungsi mengedit dan menghapus produk dengan memodifikasi views.py lalu di-routing ke urls.py, juga menambahkan template halaman untuk edit produknya.
+    b. mengonfigurasi file static pada aplikasi dengan menambah WhiteNoiseMiddleware pada settings.py; tujuannya agar file statis dapat secara otomatis bisa diakses di deployment tanpa konfigurasi yang kompleks.
+    c. membuat folder baru /static/css pada root directory dan membuat file global.css agar dapat melakukan kustomisasi menggunakan css yang kemudian dihubungkan bersama script Tailwind ke base.html
+    d. melakukan kustomisasi pada file-file template html agar lebih menarik juga menambahkan card_product.html untuk menampilkan list produk di halaman depan
+    e. membuat file baru navbar.html pada folder template di root directory dan menghubungkannya pada file main.html agar template keluar di halaman depan
+    f. melakukan git add, commit, dan push pada github dan pws
