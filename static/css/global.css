@@ -1,0 +1,112 @@
+.form-style form input, form textarea, form select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid #bcbcbc;
+    border-radius: 0.375rem;
+}
+.form-style form input:focus, form textarea:focus, form select:focus {
+    outline: none;
+    border-color: #9b0d0d;
+    box-shadow: 0 0 0 3px #9b0d0d;
+}
+
+.form-style input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 2px solid #d1d5db;
+    border-radius: 0.375rem;
+    background-color: white;
+    cursor: pointer;
+    position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.form-style input[type="checkbox"]:checked {
+    background-color: #9b0d0d;
+    border-color: #9b0d0d;
+}
+
+.form-style input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+
+.form-style input[type="checkbox"]:focus {
+    outline: none;
+    border-color: #9b0d0d;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+/* ===== Global Red & White Theme ===== */
+body {
+  background-color: #ffffff; /* White background */
+  color: #333; /* Neutral text */
+  font-family: Arial, sans-serif;
+}
+
+/* Navbar */
+nav {
+  background-color: #9b0d0d; /* Red */
+  color: white;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+}
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* Buttons */
+button, .btn {
+  background-color: #9b0d0d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+button:hover, .btn:hover {
+  background-color: #7a0a0a;
+}
+
+/* Card Styles (for product cards) */
+.card {
+  background: white;
+  border: 2px solid #9b0d0d;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.card h3 {
+  color: #9b0d0d;
+}
+.card p {
+  color: #555;
+}
+
+/* Links */
+a {
+  color: #9b0d0d;
+}
+a:hover {
+  color: #7a0a0a;
+}
+
+/* Footer */
+footer {
+  background-color: #9b0d0d;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}

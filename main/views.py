@@ -21,11 +21,13 @@ def show_main(request):
 
     context = {
 
-        'shop_name' : 'Garuda Football Shop',
-        'name': 'Haris Azzahra Lunaya',
+        'shop_name' : 'Garuda Shop',
+        'name': request.user.username,
         'class': 'PBP A',
+        'npm': '2406425930',
         'product_list': product_list,
         'last_login': request.COOKIES.get('last_login', 'Never'),
+        'user': request.user,
     }
 
     return render(request, "main.html", context)
@@ -41,6 +43,24 @@ def add_product(request):
 
     context = {'form': form}
     return render(request, "add_product.html", context)
+
+def edit_product(request, id):
+    product = get_object_or_404(product, pk=id)
+    form = ProductForm(request.POST or None, instance=product)
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
 
 @login_required(login_url='/login')
 def show_description(request, id):

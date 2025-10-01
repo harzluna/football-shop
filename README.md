@@ -126,3 +126,50 @@ Link PWS: https://haris-azzahra-footballshop.pbp.cs.ui.ac.id/
     f. Memodifikasi file views.py dengan import HttpResponseRedirest, reverse, dan datetime; lalu mengubah beberapa baris kode pada fungsi login_user, tepatnya pada if form.is_valid(). Selanjutnya pada fungsi show_main, juga menambahkan kode last_login pada dictionary context.
     g. mengubah funggsi logout_user pada views.py agar dapat menghapus cookie last_login setelah melakukan logout dan menambahkan potongan kode yang akan menampilkan data sesi terakhir login pada template main.html
     h. melakukan git add, commit, dan push pada github dan pws
+
+
+
+
+// TUGAS 5 //
+
+1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+    a. !important: Meskipun ini bukan bagian dari specificity secara teknis, menambahkan !important pada aturan CSS akan mengesampingkan semua aturan lain kecuali inline styles yang juga menggunakan !important
+    b. Inline Styles — Style yang langsung diberikan pada atribut style dalam elemen HTML, misalnya <h1 style="color: red;">. Ini memiliki nilai specificity tertinggi
+    c. ID Selector — Selector yang menggunakan ID, seperti #header.
+    d. Class, Pseudo-class, dan Attribute Selector — Selector seperti .container, :hover, atau [type="text"].
+    e. Element dan Pseudo-element Selector — Selector berbasis elemen seperti div, p, atau pseudo-elemen seperti ::before.
+    f. Universal Selector — Selector universal * memiliki prioritas paling rendah.
+
+    referensi: https://www.easycoding.id/blog/urutan-prioritas-selector-css-specificity-panduan-lengkap-untuk-memahami-dan-menggunakan
+
+2. Mengapa responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!
+    Responsive design sangat penting dalam pengembangan aplikasi web karena memastikan bahwa aplikasi atau situs web dapat diakses dan digunakan secara optimal di berbagai perangkat dengan ukuran layar yang berbeda, seperti desktop, tablet, dan smartphone. Dengan responsive design, tampilan dan fungsi aplikasi menyesuaikan secara otomatis, memberikan pengalaman pengguna yang nyaman dan konsisten tanpa harus membuat versi terpisah untuk setiap perangkat.
+    Aplikasi yang sudah menerapkan responsive design: Bootstrap, Tailwind
+    Yang belum: situs web lama yang hanya didesain untuk desktop
+    jika tidak menggunakan responsive web design, aplikasi web akan mengalami berbagai masalah seperti penurunan kualitas pengalaman pengguna, terutama dari pengguna mobile, dan kesulitan dalam pemeliharaan dan pengembangan di masa depan.
+
+
+3. Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!
+    Margin adalah ruang kosong di luar border elemen. Margin mengatur jarak antara elemen satu dengan elemen lain di sekitarnya. Margin bersifat eksternal dan tidak mempengaruhi ukuran konten atau border elemen.
+    Border adalah garis tepi atau bingkai yang mengelilingi elemen, tepat di antara padding dan margin. Border memiliki lebar, gaya (seperti solid, dashed), dan warna yang bisa diatur.
+    Padding adalah ruang di dalam border elemen yang memisahkan konten elemen dari border tersebut. Padding bersifat internal dan menambah ruang di sekitar konten, sehingga bisa memperbesar ukuran total elemen.
+
+    cara implementasi:
+    a. menentukan elemen yang akan diberi margin, padding, atau border
+    b. buka berkas CSS
+    c. tuliskan selector untuk elemen tersebut
+    d. tentukan properti margin, border, dan padding yang ingin digunakan, lalu simpan
+
+
+4. Jelaskan konsep flex box dan grid layout beserta kegunaannya!
+    Flexbox (Flexible Box) adalah sistem layout satu dimensi yang berfokus pada pengaturan elemen dalam satu baris (row) atau satu kolom (column). Flexbox memudahkan penyelarasan, distribusi ruang, dan pengaturan ukuran elemen dalam container yang fleksibel. Konsep utama flexbox adalah penggunaan dua sumbu: sumbu utama (main axis) yang merupakan arah pengaturan elemen (horizontal atau vertikal)dan sumbu silang (cross axis) yang tegak lurus terhadap sumbu utama.
+    Grid layout adalah sistem layout dua dimensi yang memungkinkan pengaturan elemen secara baris dan kolom sekaligus. Dengan grid, desain layout menjadi lebih terstruktur dan mudah mengontrol posisi dan ukuran setiap elemen secara presisi. Kita menggunakan properti seperti grid-template-columns, grid-template-rows, dan gap untuk mengatur grid. Grid cocok digunakan untuk membuat layout kompleks seperti tata letak halaman web secara keseluruhan yang terdiri dari beberapa bagian berbeda dalam baris dan kolom.
+
+    Kegunaan Flexbox dan Grid:
+    - Flexbox digunakan untuk mengelola item dalam satu dimensi, sangat baik untuk navbar, daftar horizontal atau vertikal, tombol yang perlu disejajarkan dan didistribusikan secara fleksibel.
+    - Grid digunakan untuk layout dua dimensi, seperti struktur halaman utama, pengaturan foto dalam kolom dan baris, dan tata letak dashboard yang kompleks.
+    - Keduanya sering digunakan bersamaan: grid mengatur layout utama, sedangkan flexbox mengelola elemen-elemen di dalam grid untuk fleksibilitas tambahan.
+
+
+5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
+    a. 
