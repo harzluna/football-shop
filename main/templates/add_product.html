@@ -7,23 +7,21 @@
 <div class="bg-gray-50 w-full min-h-screen">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <!-- Back Navigation -->
     <div class="mb-6">
       <a href="{% url 'main:show_main' %}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">
         ← Back
       </a>
     </div>
     
-    <!-- Form -->
     <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 form-style">
       <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Add Product</h1>
       </div>
       
-      <form method="POST" class="space-y-6">
+      <form id="add-product-form" method="POST" class="space-y-6">
         {% csrf_token %}
         {% for field in form %}
-          <div>
+          <div id="div_{{ field.id_for_label }}">
             <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
               {{ field.label }}
             </label>
@@ -33,9 +31,7 @@
             {% if field.help_text %}
               <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
             {% endif %}
-            {% for error in field.errors %}
-              <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-            {% endfor %}
+            <div id="error_{{ field.id_for_label }}" class="mt-1 text-sm text-red-600"></div>
           </div>
         {% endfor %}
         
@@ -51,4 +47,79 @@
     </div>
   </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pastikan fungsi showToast sudah tersedia (dari base.html)
+        if (typeof showToast !== 'function') {
+            console.error("showToast function is not defined. Make sure it's in base.html.");
+            return;
+        }
+
+        const form = document.getElementById('add-product-form');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Clear previous field errors
+            document.querySelectorAll('.text-red-600').forEach(el => el.innerHTML = '');
+
+            const formData = new FormData(form);
+            const url = "{% url 'main:add_product_ajax' %}";
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) { // Status code is 2xx
+                    // PANGGIL showToast UNTUK SUKSES
+                    showToast(data.message || 'Product added successfully!', 'success');
+                    addNewProductCard(data.new_product);
+                    
+                    form.reset();
+                    
+                    setTimeout(() => {
+                        window.location.href = "{% url 'main:show_main' %}";
+                    }, 1500); // 1.5 detik delay
+                
+                } else { // Status code is 4xx or 5xx
+                    // PANGGIL showToast UNTUK ERROR
+                    showToast('Please correct the errors below.', 'error');
+                    
+                    // Display specific field errors
+                    for (const fieldName in data.errors) {
+                        const errorDiv = document.getElementById(`error_id_${fieldName}`);
+                        if (errorDiv) {
+                            errorDiv.innerHTML = data.errors[fieldName].join('<br>');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                // PANGGIL showToast UNTUK ERROR JARINGAN
+                showToast('An unexpected error occurred.', 'error');
+            }
+        });
+    });
+    function addNewProductCard(product) {
+        const productList = document.getElementById('product-list-container'); // Ganti dengan ID kontainer produkmu
+        if (productList) {
+            const newCardHTML = `
+                <div class="product-card"> <img src="${product.thumbnail}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>Rp ${product.price}</p>
+                    </div>
+            `;
+            // Sisipkan kartu baru di paling atas daftar
+            productList.insertAdjacentHTML('afterbegin', newCardHTML);
+        }
+    }
+</script>
 {% endblock %}

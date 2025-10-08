@@ -178,3 +178,27 @@ Link PWS: https://haris-azzahra-footballshop.pbp.cs.ui.ac.id/
     d. melakukan kustomisasi pada file-file template html agar lebih menarik juga menambahkan card_product.html untuk menampilkan list produk di halaman depan
     e. membuat file baru navbar.html pada folder template di root directory dan menghubungkannya pada file main.html agar template keluar di halaman depan
     f. melakukan git add, commit, dan push pada github dan pws
+
+
+
+**// TUGAS 6 //**
+
+1. Apa perbedaan antara synchronous request dan asynchronous request?
+   synchronus request: proses berjalan step-by-step, program akan menunggu sehingga client akan diblokir sementara hingga operasi selesai, baru bisa lanjjut ke proses berikutnya.
+   asynchrounous request: browser responsif dan tidak harus menunngu program selesai baru bisa lanjut.
+
+
+2. Bagaimana AJAX bekerja di Django (alur request–response)?
+   AJAX dalam Django bekerja dengan cara memungkinkan pertukaran data antara client dan server tanpa perlu melakukan reload seluruh halaman web. Ketika pengguna melakukan suatu aksi di halaman web, misalnya menekan tombol “Tambah Produk”, JavaScript yang tertanam di halaman tersebut akan dijalankan. JavaScript kemudian mengirimkan permintaan (request) ke server Django melalui URL tertentu menggunakan metode asynchronous. Setelah permintaan dikirim, Django di sisi server menerima request tersebut melalui konfigurasi yang telah ditentukan dalam urls.py. Django akan mencocokkan URL yang diminta dengan view function yang sesuai. Begitu request diteruskan ke view tersebut, Django mulai memproses data yang dikirim dari front-end. Data ini kemudian diambil dan dikelola di dalam fungsi view—biasanya disimpan ke dalam database menggunakan model yang sesuai. Setelah pemrosesan selesai, Django tidak mengirimkan halaman HTML baru seperti pada request biasa, melainkan hanya mengirimkan balasan dalam bentuk data JSON. Kemudian, data JSON yang dikirim oleh Django dikembalikan ke sisi client dan diterima kembali oleh JavaScript. JavaScript membaca data tersebut dan langsung memperbarui tampilan halaman sesuai dengan hasil yang diterima tanpa perlu memuat ulang seluruh halaman. Misalnya, setelah pengguna menambahkan produk baru, data produk tersebut otomatis muncul di daftar produk di halaman, padahal halaman tidak di-refresh.
+
+
+3. Apa keuntungan menggunakan AJAX dibandingkan render biasa di Django?
+   Keuntungan menggunakan AJAX dibandingkan render biasa di Django adalah prosesnya lebih cepat dan interaktif karena tidak perlu me-reload seluruh halaman setiap kali ada perubahan. AJAX hanya mengirim dan menerima data yang dibutuhkan, bukan seluruh tampilan, sehingga aplikasi terasa lebih ringan dan responsif. Dengan begitu, pengguna bisa melihat pembaruan secara langsung di halaman tanpa terganggu oleh proses loading ulang, sementara Django tetap memproses data di sisi server dengan efisien.
+
+
+4. Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django?
+   Pertama, setiap permintaan AJAX yang dikirim dari front-end harus menyertakan CSRF token agar Django bisa memverifikasi bahwa request tersebut benar-benar berasal dari situs yang sah dan bukan serangan cross-site. Kemudian, data sensitif seperti password harus selalu dikirim melalui HTTPS, bukan HTTP, agar terenkripsi dan tidak bisa disadap di jaringan. Django sendiri akan menangani proses hashing password, jadi data yang tersimpan di database tetap aman. Selain itu, validasi input tetap wajib dilakukan di sisi server untuk mencegah serangan seperti SQL injection atau manipulasi data.
+
+
+5. Bagaimana AJAX mempengaruhi pengalaman pengguna (User Experience) pada website?
+    AJAX membantu menciptakan website yang lebih interaktif, efisien, dan menarik secara visual. Dengan AJAX, pengguna tidak perlu menunggu halaman dimuat ulang setiap kali melakukan aksi seperti mengirim form, menambah data, atau memuat konten baru. Hal ini menciptakan kesan bahwa website bereaksi secara instan terhadap tindakan pengguna, mirip seperti aplikasi desktop atau mobile. Selain itu, AJAX juga memungkinkan pembaruan data secara dinamis di bagian tertentu halaman tanpa mengganggu elemen lain.

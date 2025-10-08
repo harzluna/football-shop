@@ -1,95 +1,42 @@
 {% extends 'base.html' %}
-
 {% block meta %}
 <title>Login - Garuda Shop</title>
 {% endblock meta %}
 
 {% block content %}
+<style>
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    .shake {
+        animation: shake 0.5s ease-in-out;
+    }
+</style>
+
 <div class="bg-gray-50 w-full min-h-screen flex items-center justify-center p-8">
-  <div class="max-w-md w-full">
+  <div id="login-container" class="max-w-md w-full">
     <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 form-style">
       <div class="text-center mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Sign In</h1>
         <p class="text-gray-600">Welcome back to Garuda Shop</p>
       </div>
 
-      <!-- Form Errors Display -->
-      {% if form.non_field_errors %}
-        <div class="mb-6">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      {% if form.errors %}
-        <div class="mb-6">
-          {% for field, errors in form.errors.items %}
-            {% if field != '__all__' %}
-              {% for error in errors %}
-                <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700 mb-2">
-                  <strong>{{ field|title }}:</strong> {{ error }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <form method="POST" action="" class="space-y-6">
+      <form id="login-form" method="POST" class="space-y-6">
         {% csrf_token %}
-        
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-          <input 
-            id="username" 
-            name="username" 
-            type="text" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-green-500 transition-colors" 
-            placeholder="Enter your username">
+          <input id="username" name="username" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-green-500 transition-colors" placeholder="Enter your username">
         </div>
-
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input 
-            id="password" 
-            name="password" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-red-500 transition-colors" 
-            placeholder="Enter your password">
+          <input id="password" name="password" type="password" required class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-red-500 transition-colors" placeholder="Enter your password">
         </div>
-
-        <button 
-          type="submit" 
-          class="w-full bg-red-600 text-white font-medium py-3 px-4 rounded-md hover:bg-red-700 transition-colors">
+        <button type="submit" class="w-full bg-red-600 text-white font-medium py-3 px-4 rounded-md hover:bg-red-700 transition-colors">
           Sign In
         </button>
       </form>
-
-      <!-- Messages Display -->
-      {% if messages %}
-        <div class="mt-6">
-          {% for message in messages %}
-            <div 
-              class="
-                px-4 py-3 rounded-md text-sm border
-                {% if message.tags == 'success' %}
-                  bg-blue-50 border-blue-200 text-blue-700
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-red-700
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
 
       <div class="mt-6 text-center pt-6 border-t border-gray-200">
         <p class="text-gray-500 text-sm">
@@ -102,4 +49,53 @@
     </div>
   </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pastikan fungsi showToast dan getCookie sudah tersedia (dari base.html)
+        if (typeof showToast !== 'function' || typeof getCookie !== 'function') {
+            console.error("showToast or getCookie function is not defined. Make sure it's in base.html.");
+            return;
+        }
+
+        const form = document.getElementById('login-form');
+        const loginContainer = document.getElementById('login-container');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const url = "{% url 'main:login_ajax' %}";
+            const csrftoken = getCookie('csrftoken');
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': csrftoken },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(data.message, 'success');
+                    // Tunggu sebentar agar user bisa melihat toast, lalu redirect
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 1500); // 1.5 detik delay
+                } else {
+                    showToast(data.message, 'error');
+                    // Tambahkan animasi 'shake' untuk feedback visual
+                    loginContainer.classList.add('shake');
+                    setTimeout(() => {
+                        loginContainer.classList.remove('shake');
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast('An unexpected error occurred.', 'error');
+            }
+        });
+    });
+</script>
 {% endblock content %}

@@ -7,50 +7,199 @@
 
 {% block content %}
 {% include 'navbar.html' %}
+
 <div class="bg-gray-50 w-full pt-16 min-h-screen">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     <!-- Header Section -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Hello, {{ user.username }}!</h1></p>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Hello, {{ user.username }}!</h1>
     </div>
+
+    <!-- Button to open modal -->
+    <button onclick="showModal()" class="add-product-btn items-center px-4 py-2 bg-white text-green-600 font-semibold outline outline-2 outline-green-600 outline-offset-[-2px] rounded-md hover:bg-green-600 hover:text-white transition-colors mb-4">
+      Add Product by AJAX
+    </button>
 
     <!-- Filter Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-gray-200 p-4">
       <div class="flex space-x-3 mb-4 sm:mb-0">
-        <a href="?" class="{% if request.GET.filter == 'all' or not request.GET.filter  %} bg-red-600 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-red-600 hover:text-white">
+        <a href="?" id="filter-all"
+          class="px-4 py-2 rounded-md font-medium transition-colors hover:bg-red-600 hover:text-white 
+                  {% if not request.GET.filter or request.GET.filter == 'all' %} 
+                      bg-red-600 text-white
+                  {% else %}
+                      bg-white text-gray-700 border border-gray-300
+                  {% endif %}">
           All Product
         </a>
-        <a href="?filter=my" class="{% if request.GET.filter == 'my' %} bg-red-600 text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-red-600 hover:text-white">
+        <a href="?filter=my" id="filter-my"
+          class="px-4 py-2 rounded-md font-medium transition-colors hover:bg-red-600 hover:text-white
+                  {% if request.GET.filter == 'my' %}
+                      bg-red-600 text-white
+                  {% else %}
+                      bg-white text-gray-700 border border-gray-300
+                  {% endif %}">
           My Product
         </a>
       </div>
+
       {% if user.is_authenticated %}
-        <div class="text-sm text-gray-500">
-          Last login: {{ last_login }}
-        </div>
+      <div class="text-sm text-gray-500">
+        Last login: {{ last_login }}
+      </div>
       {% endif %}
     </div>
 
-    <!-- product Grid -->
-    {% if not product_list %}
-      <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
-        <div class="w-32 h-32 mx-auto mb-4">
-          <img src="{% static 'image/no-product.webp' %}" alt="No product available" class="w-full h-full object-contain">
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No product found</h3>
-        <p class="text-gray-500 mb-6">Sell your first product.</p>
-        <a href="{% url 'main:add_product' %}" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-          Add Product
-        </a>
+    <!-- Loading State -->
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-red-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-gray-600 mt-3">Loading products...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="hidden bg-white p-8 text-center border border-red-300 rounded-lg">
+      <h3 class="text-lg font-semibold text-red-600 mb-2">Failed to load products 😢</h3>
+      <p class="text-gray-600">Please refresh the page or try again later.</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <div class="w-32 h-32 mx-auto mb-4">
+        <img src="{% static 'image/no-product.webp' %}" alt="No product available"
+          class="w-full h-full object-contain">
       </div>
-    {% else %}
-      <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
-        {% for product in product_list %}
-          {% include 'card_product.html' with product=product %}
-        {% endfor %}
-      </div>
-    {% endif %}
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No product found</h3>
+      <p class="text-gray-500 mb-6">Sell your first product now!</p>
+      <a href="{% url 'main:add_product' %}"
+        class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+        + Add Product
+      </a>
+    </div>
+
+    <!-- Product Grid -->
+    <div id="grid" class="hidden grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5"></div>
+
   </div>
 </div>
+
+<!-- === SCRIPT === -->
+<script>
+const PRODUCT_API_ENDPOINT = "{% url 'main:show_json' %}";
+const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}";
+
+const loadingSpinner = document.getElementById('loading');
+const errorMessage = document.getElementById('error');
+const emptyStateDisplay = document.getElementById('empty');
+const productGridContainer = document.getElementById('grid');
+const showAllButton = document.getElementById('filter-all');
+const showMyButton = document.getElementById('filter-my');
+
+let activeFilter = 'all';
+let allProducts = [];
+
+function showSection({ loading = false, error = false, empty = false, grid = false }) {
+  loadingSpinner.classList.toggle('hidden', !loading);
+  errorMessage.classList.toggle('hidden', !error);
+  emptyStateDisplay.classList.toggle('hidden', !empty);
+  productGridContainer.classList.toggle('hidden', !grid);
+}
+
+function renderProductCard(product) {
+  const wrapper = document.createElement('div');
+  wrapper.className = "bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition duration-300 w-full box-border";
+
+  wrapper.innerHTML = `
+    <a href="/product/${product.id}/">
+      <img class="w-full h-52 object-cover" src="${product.thumbnail || '{% static "image/no-image.png" %}'}" alt="${product.name}">
+    </a>
+    <div class="p-4 flex flex-col justify-start">
+      <h3 class="text-xl font-bold text-[#9b0d0d] truncate">
+        <a href="/product/${product.id}/" class="hover:text-red-600 transition-colors">
+          ${product.name}</a></h3>
+
+      <p class="mt-2 text-gray-700 text-l font-semibold">Rp ${product.price}</p>
+      <div class="mt-4 flex gap-2">
+        <a href="/product/${product.id}/" 
+           class="flex-1 text-center border-2 border-[#9b0d0d] text-[#9b0d0d] py-2 rounded-lg hover:bg-[#9b0d0d] hover:text-white transition">
+          Show Details
+        </a>
+        ${
+          CURRENT_USER_ID && Number(CURRENT_USER_ID) === Number(product.author_id)
+            ? `
+              <a href="/edit/${product.id}/" 
+                 class="edit-product-btn flex-1 text-center border-2 border-yellow-500 text-yellow-600 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition">
+                Edit
+              </a>
+              <a href="/delete/${product.id}/" 
+                 class="flex-1 text-center border-2 border-red-600 text-red-600 py-2 rounded-lg hover:bg-red-600 hover:text-white transition"
+                 onclick="return confirm('Yakin mau hapus produk ini?');">
+                Delete
+              </a>`
+            : `
+              <button class="flex-1 text-center bg-[#9b0d0d] text-white py-2 rounded-lg hover:bg-[#7a0a0a] hover:text-white transition">
+                Add to Cart
+              </button>`
+        }
+      </div>
+    </div>
+  `;
+  return wrapper;
+}
+
+function renderProducts(products) {
+  productGridContainer.innerHTML = '';
+  products.forEach(p => productGridContainer.appendChild(renderProductCard(p)));
+}
+
+async function fetchProducts() {
+  try {
+    showSection({ loading: true });
+    const response = await fetch(PRODUCT_API_ENDPOINT);
+    if (!response.ok) throw new Error('Failed to fetch products');
+    const data = await response.json();
+    allProducts = data || [];
+    filterAndRender();
+  } catch (err) {
+    console.error(err);
+    showSection({ error: true });
+  }
+}
+
+function filterAndRender() {
+  const filtered = activeFilter === 'my'
+    ? allProducts.filter(p => Number(p.author_id) === Number(CURRENT_USER_ID))
+    : allProducts;
+
+  if (filtered.length === 0) showSection({ empty: true });
+  else {
+    renderProducts(filtered);
+    showSection({ grid: true });
+  }
+}
+
+showAllButton.addEventListener('click', e => {
+  e.preventDefault();
+  activeFilter = 'all';
+  filterAndRender();
+});
+
+showMyButton.addEventListener('click', e => {
+  e.preventDefault();
+  activeFilter = 'my';
+  filterAndRender();
+});
+
+document.addEventListener('productAdded', () => {
+  fetchProducts();
+});
+
+fetchProducts();
+</script>
+
 {% endblock content %}

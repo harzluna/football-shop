@@ -14,94 +14,27 @@
         <p class="text-gray-500">Create your account</p>
       </div>
 
-      <!-- Form Errors Display -->
-      {% if form.non_field_errors %}
-        <div class="mb-6">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      {% if form.errors %}
-        <div class="mb-6">
-          {% for field, errors in form.errors.items %}
-            {% if field != '__all__' %}
-              {% for error in errors %}
-                <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700 mb-2">
-                  <strong>{{ field|title }}:</strong> {{ error }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <form method="POST" action="" class="space-y-5">
+      <form id="register-form" method="POST" class="space-y-5">
         {% csrf_token %}
-        
         <div>
-          <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-          <input 
-            id="username" 
-            name="username" 
-            type="text" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-red-500 transition duration-200" 
-            placeholder="Choose a username">
+          <label for="id_username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+          <input id="id_username" name="username" type="text" required class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-red-500 transition duration-200" placeholder="Choose a username">
+          <div id="error_username" class="mt-1 text-sm text-red-600"></div>
         </div>
-
         <div>
-          <label for="password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input 
-            id="password1" 
-            name="password1" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-red-500 transition duration-200" 
-            placeholder="Create a password">
+          <label for="id_password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <input id="id_password1" name="password1" type="password" required class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-red-500 transition duration-200" placeholder="Create a password">
+          <div id="error_password1" class="mt-1 text-sm text-red-600"></div>
         </div>
-
         <div>
-          <label for="password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-          <input 
-            id="password2" 
-            name="password2" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-red-500 transition duration-200" 
-            placeholder="Confirm your password">
+          <label for="id_password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+          <input id="id_password2" name="password2" type="password" required class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-red-500 transition duration-200" placeholder="Confirm your password">
+          <div id="error_password2" class="mt-1 text-sm text-red-600"></div>
         </div>
-
-        <button 
-          type="submit" 
-          class="w-full bg-red-600 text-white font-medium py-3 px-4 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200">
+        <button type="submit" class="w-full bg-red-600 text-white font-medium py-3 px-4 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200">
           Create Account
         </button>
       </form>
-
-      <!-- Messages Display -->
-      {% if messages %}
-        <div class="mt-6">
-          {% for message in messages %}
-            <div 
-              class="
-                px-4 py-3 rounded text-sm border
-                {% if message.tags == 'success' %}
-                  bg-blue-50 border-blue-200 text-blue-700
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-red-700
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
 
       <div class="mt-6 text-center">
         <p class="text-gray-500 text-sm">
@@ -115,4 +48,63 @@
     </div>
   </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Pastikan fungsi showToast dan getCookie sudah tersedia (dari base.html)
+        if (typeof showToast !== 'function' || typeof getCookie !== 'function') {
+            console.error("showToast or getCookie function is not defined.");
+            return;
+        }
+
+        const form = document.getElementById('register-form');
+        const errorDivs = {
+            username: document.getElementById('error_username'),
+            password1: document.getElementById('error_password1'),
+            password2: document.getElementById('error_password2'),
+        };
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Bersihkan error sebelumnya
+            for (const key in errorDivs) {
+                if (errorDivs[key]) errorDivs[key].innerHTML = '';
+            }
+
+            const formData = new FormData(form);
+            const url = "{% url 'main:register_ajax' %}";
+            const csrftoken = getCookie('csrftoken');
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': csrftoken },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 2000); // 2 detik delay
+                } else {
+                    showToast('Please correct the errors below.', 'error');
+                    // Tampilkan error validasi di bawah setiap field
+                    for (const fieldName in data.errors) {
+                        const errorDiv = errorDivs[fieldName];
+                        if (errorDiv) {
+                            errorDiv.innerHTML = data.errors[fieldName].map(e => `<span>${e}</span>`).join('<br>');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                showToast('An unexpected error occurred.', 'error');
+            }
+        });
+    });
+</script>
 {% endblock content %}

@@ -2,80 +2,181 @@
 {% load static %}
 
 {% block meta %}
-<title>{{ product.title }} - Detail Product</title>
+<title>Product Detail</title>
 {% endblock meta %}
 
 {% block content %}
-<div class="bg-gray-50 w-full min-h-screen">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="bg-gray-100 w-full min-h-screen py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <!-- Back Navigation -->
-        <div class="mb-6">
-            <a href="{% url 'main:show_main' %}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">
-                ← Back
-            </a>
+        <div class="mb-4 text-sm text-gray-500">
+            <a href="#" class="hover:underline">Home</a> &gt; 
+            <a href="#" id="breadcrumb-category" class="hover:underline">Category</a> &gt; 
+            <span id="breadcrumb-product-name" class="font-medium text-gray-700">Product Name</span>
         </div>
         
-        <!--  -->
-        <article class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            
-            <!-- Header -->
-            <div class="p-6 sm:p-8">
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-green-600 text-white">
-                        {{ product.get_category_display }}
-                    </span>
-                    {% if product.is_featured %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                            Featured
-                        </span>
-                    {% endif %}
-                    {% if product.is_product_hot %}
-                        <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800">
-                            Hot
-                        </span>
-                    {% endif %}
-                </div>
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 
-                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-4">
-                    {{ product.name }}
-                </h1>
-            </div>
-
-            <!-- Featured Image -->
-            {% if product.thumbnail %}
-                <div class="px-6 sm:px-8">
-                    <img src="{{ product.thumbnail }}" 
-                         alt="{{ product.title }}" 
-                         class="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg">
-                </div>
-            {% endif %}
-
-            <!-- Content -->
-            <div class="p-6 sm:p-8">
-                <div class="prose prose-lg max-w-none">
-                    <div class="text-gray-700 leading-relaxed whitespace-pre-line text-base sm:text-lg">
-                        {{ product.description }}
+                <div>
+                    <div class="mb-4">
+                        <img id="product-main-image" src="https://via.placeholder.com/800x600/e2e8f0/64748b?text=Loading..." alt="Main product image" class="w-full h-auto object-cover rounded-lg border">
                     </div>
-                </div>
-            </div>
-
-            <!-- Author Info -->
-            <div class="border-t border-gray-200 p-6 sm:p-8 bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="font-medium text-gray-900">
-                            {% if product.user %}
-                                <p>Seller: {{ product.user.username }}</p>
-                            {% else %}
-                                <p>Seller: Anonymous</p>
-                            {% endif %}
+                    <div id="product-thumbnails" class="flex items-center gap-2">
                         </div>
-                        <p class="text-sm text-gray-500">Seller</p>
+                </div>
+
+                <div>
+                    <h1 id="product-name" class="text-3xl font-bold text-gray-900 mb-2">Loading...</h1>
+                    
+                    <div class="flex items-center gap-4 mb-4 text-sm">
+                        <div id="product-rating-container" class="flex items-center gap-1 text-yellow-500">
+                            </div>
+                        <div id="product-review-count" class="text-gray-500"></div>
+                        <span id="rating-separator" class="text-gray-300 hidden">|</span>
+                        <div class="text-gray-500">Sold by: <span id="product-seller" class="font-medium text-blue-600"></span></div>
+                    </div>
+                    
+                    <div id="product-price" class="text-4xl font-extrabold text-gray-800 mb-4"></div>
+                    
+                    <div id="product-stock" class="mb-6"></div>
+
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="flex items-center border border-gray-300 rounded-md">
+                            <button class="px-3 py-2 text-gray-600 hover:bg-gray-100">-</button>
+                            <input type="text" value="1" class="w-12 text-center border-l border-r">
+                            <button class="px-3 py-2 text-gray-600 hover:bg-gray-100">+</button>
+                        </div>
+                        <button class="flex-grow bg-red-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+                            Add to Cart
+                        </button>
+                        <button class="p-3 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-red-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                        </button>
+                    </div>
+
+                    <div class="text-sm text-gray-500">
+                        <p>SKU: <span id="product-sku">N/A</span></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="mt-12">
+                <div class="border-b border-gray-200">
+                    <nav class="flex space-x-8 -mb-px" aria-label="Tabs">
+                        <a href="#" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600">Description</a>
+                        <a href="#" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-white-500 hover:text-gray-700 hover:border-gray-300">Specifications</a>
+                        <a href="#" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-white-500 hover:text-gray-700 hover:border-gray-300">Reviews</a>
+                    </nav>
+                </div>
+                <div class="py-6">
+                    <div id="product-description" class="prose max-w-none text-gray-700">
                     </div>
                 </div>
             </div>
-        </article>
+        </div>
     </div>
 </div>
+
+<script>
+   
+    const PRODUCT_ID = "{{ product.id }}";
+    const PRODUCT_DETAIL_ENDPOINT = `{% url 'main:show_json_by_id' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', PRODUCT_ID);
+
+    function formatCurrency(number) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+    }
+
+    // --- Fungsi untuk Mengganti Gambar Utama ---
+    function changeMainImage(element) {
+        document.getElementById('product-main-image').src = element.src;
+        // Update border style for thumbnails
+        document.querySelectorAll('#product-thumbnails img').forEach(img => {
+            img.classList.remove('border-blue-500');
+            img.classList.add('border-transparent');
+        });
+        element.classList.add('border-blue-500');
+        element.classList.remove('border-transparent');
+    }
+
+    async function loadProduct(productId) {
+        const url = `product/${productId}/`;
+        
+        try {
+            const response = await fetch(PRODUCT_DETAIL_ENDPOINT);
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            const product = await response.json();
+
+            // === Mengisi product ke Template ===
+            document.getElementById('breadcrumb-category').textContent = product.category || '...';
+            document.getElementById('breadcrumb-product-name').textContent = product.name || '...';
+            document.getElementById('product-name').textContent = product.name || 'Product Name Not Available';
+            document.getElementById('product-seller').textContent = product.seller ? product.seller.username : 'Anonymous';
+            document.getElementById('product-sku').textContent = product.sku || 'N/A';
+            document.getElementById('product-description').textContent = product.description || 'No description available.';
+
+            // Harga
+            document.getElementById('product-price').textContent = product.price ? formatCurrency(product.price) : 'Price not available';
+
+            // Stok
+            const stockElement = document.getElementById('product-stock');
+            if (product.stock !== undefined && product.stock !== null) {
+                stockElement.style.display = 'block';
+                if (product.stock > 0) {
+                    stockElement.innerHTML = `<span class="inline-block bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full">In Stock (${product.stock} available)</span>`;
+                } else {
+                    stockElement.innerHTML = `<span class="inline-block bg-red-100 text-red-800 text-xs font-medium px-2.5 py-1 rounded-full">Out of Stock</span>`;
+                }
+            } else {
+                stockElement.style.display = 'none';
+            }
+
+            // Rating Bintang
+            const ratingContainer = document.getElementById('product-rating-container');
+            const reviewCountEl = document.getElementById('product-review-count');
+            const ratingSeparator = document.getElementById('rating-separator');
+
+            if (product.rating > 0) {
+                ratingContainer.innerHTML = '';
+                const fullStars = Math.floor(product.rating);
+                for (let i = 0; i < 5; i++) {
+                    ratingContainer.innerHTML += `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ${i < fullStars ? 'text-yellow-400' : 'text-gray-300'}" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>`;
+                }
+                reviewCountEl.textContent = product.review_count ? `(${product.review_count} reviews)` : '';
+                ratingSeparator.style.display = 'inline';
+            } else {
+                 ratingContainer.style.display = 'none';
+                 reviewCountEl.style.display = 'none';
+            }
+
+
+            // Galeri Gambar
+            const mainImageEl = document.getElementById('product-main-image');
+            const thumbnailsContainer = document.getElementById('product-thumbnails');
+            thumbnailsContainer.innerHTML = '';
+            
+            const imageUrls = (product.thumbnail ? [product.thumbnail] : []);
+            
+            if (imageUrls.length > 0) {
+                mainImageEl.src = imageUrls[0];
+                imageUrls.forEach((url, index) => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = `Thumbnail ${index + 1}`;
+                    img.className = `w-16 h-16 object-cover rounded-md border-2 hover:border-blue-500 cursor-pointer ${index === 0 ? 'border-blue-500' : 'border-transparent'}`;
+                    img.onclick = function() { changeMainImage(this); };
+                    thumbnailsContainer.appendChild(img);
+                });
+            } else {
+                mainImageEl.src = 'https://tokomiring.id/image/no-product-image.png';
+            }
+
+        } catch (error) {
+            console.error("Failed to fetch product:", error);
+            document.getElementById('product-name').textContent = 'Product could not be loaded.';
+        }
+    }
+loadProduct(PRODUCT_ID);    
+</script>
 {% endblock content %}

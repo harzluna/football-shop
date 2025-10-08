@@ -9,21 +9,21 @@
 <div class="bg-gray-50 w-full min-h-screen">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <!-- Back Navigation -->
     <div class="mb-6">
       <a href="{% url 'main:show_main' %}" class="text-gray-600 hover:text-gray-900 font-medium transition-colors">
         ← Back
       </a>
     </div>
     
-    <!-- Form -->
     <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 form-style">
       <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Edit Product</h1>
         <p class="text-gray-600">Update your product</p>
       </div>
       
-      <form method="POST" class="space-y-6">
+      <div id="form-messages" class="mb-4"></div>
+
+      <form id="edit-product-form" method="POST" class="space-y-6">
         {% csrf_token %}
         {% for field in form %}
           <div>
@@ -33,12 +33,7 @@
             <div class="w-full">
               {{ field }}
             </div>
-            {% if field.help_text %}
-              <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
-            {% endif %}
-            {% for error in field.errors %}
-              <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-            {% endfor %}
+            <div id="error_{{ field.id_for_label }}" class="mt-1 text-sm text-red-600"></div>
           </div>
         {% endfor %}
         
@@ -46,7 +41,7 @@
           <a href="{% url 'main:show_main' %}" class="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors text-center">
             Cancel
           </a>
-          <button type="submit" class="order-1 sm:order-2 flex-1 bg-red-600 text-white px-6 py-3 rounded-md font-medium hover:bg-red-700 transition-colors">
+          <button type="submit" class="order-1 sm:order-2 flex-1 bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors">
             Update Product
           </button>
         </div>
@@ -54,4 +49,52 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ambil ID produk dari context Django yang dikirim oleh view
+    const productId = "{{ product.id }}";
+    const form = document.getElementById('edit-product-form');
+    const messagesDiv = document.getElementById('form-messages');
+
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const url = `/edit_ajax/${productId}/`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Panggil showToast untuk sukses
+                showToast(data.message, 'success');
+                setTimeout(() => {
+                    window.location.href = "{% url 'main:show_main' %}";
+                }, 2000);
+            } else {
+                // Panggil showToast untuk error
+                showToast('Please correct the errors below.', 'error');
+                // Logika untuk menampilkan error di setiap field bisa tetap ada
+                for (const fieldName in data.errors) {
+                    const errorDiv = document.getElementById(`error_id_${fieldName}`);
+                    if (errorDiv) {
+                        errorDiv.innerHTML = data.errors[fieldName].join('<br>');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            // Panggil showToast untuk error jaringan
+            showToast('An unexpected error occurred.', 'error');
+        }
+    });
+});
+</script>
 {% endblock %}
