@@ -55,10 +55,6 @@
                         </button>
                     </div>
 
-                    <div class="text-sm text-gray-500">
-                        <p>SKU: <span id="product-sku">N/A</span></p>
-                    </div>
-
                 </div>
             </div>
 
@@ -112,8 +108,13 @@
             document.getElementById('breadcrumb-category').textContent = product.category || '...';
             document.getElementById('breadcrumb-product-name').textContent = product.name || '...';
             document.getElementById('product-name').textContent = product.name || 'Product Name Not Available';
-            document.getElementById('product-seller').textContent = product.seller ? product.seller.username : 'Anonymous';
-            document.getElementById('product-sku').textContent = product.sku || 'N/A';
+            let sellerName = 'Anonymous';
+            if (product.user) {
+                if (typeof product.user === 'string') sellerName = product.user;
+                else if (product.user.username) sellerName = product.user.username;
+                else sellerName = String(product.user);
+            }
+            document.getElementById('product-seller').textContent = sellerName;
             document.getElementById('product-description').textContent = product.description || 'No description available.';
 
             // Harga

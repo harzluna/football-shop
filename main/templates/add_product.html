@@ -50,7 +50,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Pastikan fungsi showToast sudah tersedia (dari base.html)
         if (typeof showToast !== 'function') {
             console.error("showToast function is not defined. Make sure it's in base.html.");
             return;
@@ -68,42 +67,44 @@
             const url = "{% url 'main:add_product_ajax' %}";
 
             try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-                    },
-                });
+            const response = await fetch(url, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+              },
+            });
 
-                const data = await response.json();
+            // parse response safely depending on content-type
+            const contentType = response.headers.get('content-type') || '';
+            let data = null;
+            if (contentType.indexOf('application/json') !== -1) {
+              try { data = await response.json(); } catch(e) { data = null; }
+            } else {
+              // try text fallback
+              try { data = await response.text(); } catch(e) { data = null; }
+            }
 
-                if (response.ok) { // Status code is 2xx
-                    // PANGGIL showToast UNTUK SUKSES
-                    showToast(data.message || 'Product added successfully!', 'success');
-                    addNewProductCard(data.new_product);
-                    
-                    form.reset();
-                    
-                    setTimeout(() => {
-                        window.location.href = "{% url 'main:show_main' %}";
-                    }, 1500); // 1.5 detik delay
-                
-                } else { // Status code is 4xx or 5xx
-                    // PANGGIL showToast UNTUK ERROR
-                    showToast('Please correct the errors below.', 'error');
-                    
-                    // Display specific field errors
-                    for (const fieldName in data.errors) {
-                        const errorDiv = document.getElementById(`error_id_${fieldName}`);
-                        if (errorDiv) {
-                            errorDiv.innerHTML = data.errors[fieldName].join('<br>');
-                        }
-                    }
+            if (response.ok) { // Status code is 2xx
+              const msg = (data && data.message) ? data.message : (typeof data === 'string' ? data : 'Product added successfully!');
+              showToast(msg, 'success');
+              if (data && data.new_product) addNewProductCard(data.new_product);
+              form.reset();
+              setTimeout(() => { window.location.href = "{% url 'main:show_main' %}"; }, 1200);
+            } else { // Status code is 4xx or 5xx
+              showToast('Please correct the errors below.', 'error');
+              if (data && data.errors) {
+                for (const fieldName in data.errors) {
+                  const errorDiv = document.getElementById(`error_id_${fieldName}`);
+                  if (errorDiv) errorDiv.innerHTML = data.errors[fieldName].join('<br>');
                 }
+              } else {
+                console.error('Add product failed:', data);
+              }
+            }
             } catch (error) {
                 console.error('Submission error:', error);
-                // PANGGIL showToast UNTUK ERROR JARINGAN
                 showToast('An unexpected error occurred.', 'error');
             }
         });

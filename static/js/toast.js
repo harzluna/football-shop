@@ -1,9 +1,26 @@
-function showToast(title, message, type = 'normal', duration = 3000) {
+function showToast(a, b, c = 'normal', d = 3000) {
+    let title, message, type = 'normal', duration = 3000;
+    if (arguments.length === 1) {
+        message = a;
+    } else if (arguments.length === 2) {
+        if (b === 'success' || b === 'error' || b === 'normal') {
+            message = a; type = b;
+        } else {
+            title = a; message = b;
+        }
+    } else {
+        title = a; message = b; type = c; duration = d;
+    }
     const toastComponent = document.getElementById('toast-component');
     const toastTitle = document.getElementById('toast-title');
     const toastMessage = document.getElementById('toast-message');
-    
-    if (!toastComponent) return;
+
+    // If toast markup isn't present, fall back to alert and console.warn
+    if (!toastComponent) {
+        console.warn('Toast component not found, falling back to alert.');
+        if (message) alert(message);
+        return;
+    }
 
     // Remove all type classes first
     toastComponent.classList.remove(
@@ -24,8 +41,16 @@ function showToast(title, message, type = 'normal', duration = 3000) {
         toastComponent.style.border = '1px solid #d1d5db';
     }
 
-    toastTitle.textContent = title;
-    toastMessage.textContent = message;
+    // If title not provided, hide title element (if exists)
+    if (toastTitle) {
+        if (title) {
+            toastTitle.textContent = title;
+            toastTitle.style.display = '';
+        } else {
+            toastTitle.style.display = 'none';
+        }
+    }
+    if (toastMessage) toastMessage.textContent = message || '';
 
     toastComponent.classList.remove('opacity-0', 'translate-y-64');
     toastComponent.classList.add('opacity-100', 'translate-y-0');

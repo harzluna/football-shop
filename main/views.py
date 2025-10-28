@@ -60,7 +60,7 @@ def add_product_ajax(request):
     stock = request.POST.get("stock")
     category = request.POST.get("category")
     thumbnail = request.POST.get("thumbnail")
-    is_featured = request.POST.get("is_featured") == 'on'  # checkbox handling
+    is_featured = request.POST.get("is_featured") == 'on'  
     user = request.user if request.user.is_authenticated else None
 
     new_product = Product(
@@ -74,7 +74,18 @@ def add_product_ajax(request):
         user=user
     )
     new_product.save()
-    return HttpResponse("Product added successfully", status=201)
+    new_product_data = {
+        'id': str(new_product.id),
+        'name': new_product.name,
+        'description': new_product.description,
+        'price': str(new_product.price),
+        'stock': new_product.stock,
+        'category': new_product.category,
+        'thumbnail': new_product.thumbnail,
+        'is_featured': new_product.is_featured,
+        'user_id': new_product.user_id,
+    }
+    return JsonResponse({'status': 'success', 'message': 'Product added successfully', 'new_product': new_product_data}, status=201)
 
 @login_required(login_url='/login')
 def edit_product(request, id):  
@@ -96,7 +107,7 @@ def edit_product(request, id):
     return render(request, "edit_product.html", context)
 
 @login_required(login_url='/login')
-@csrf_exempt # Jika kamu menggunakan ini
+@csrf_exempt 
 def edit_product_ajax(request, id):
     if request.method == 'POST':
         product = get_object_or_404(Product, pk=id)
@@ -187,7 +198,7 @@ def show_json_by_id(request, product_id):
             'category': product.category,
             'thumbnail': product.thumbnail,
             'is_featured': product.is_featured,
-            'user': product.user.username if product.user_id else 'Anonymous',
+            'user': {'id': product.user_id, 'username': product.user.username} if product.user_id else None,
             'user_id': product.user_id,
         }
         return JsonResponse(data)
@@ -233,10 +244,9 @@ def login_ajax(request):
             return JsonResponse({
                 'status': 'success',
                 'message': 'Login successful! Redirecting...',
-                'redirect_url': reverse('main:show_main') # URL tujuan setelah sukses
+                'redirect_url': reverse('main:show_main')
             })
         else:
-            # Mengambil pesan error utama dari form (e.g., "invalid credentials")
             error_message = form.get_json_data().get('__all__', ['Invalid username or password.'])[0]
             return JsonResponse({'status': 'error', 'message': error_message}, status=400)
             
@@ -257,10 +267,9 @@ def register_ajax(request):
             return JsonResponse({
                 'status': 'success',
                 'message': 'Account created successfully! Please log in.',
-                'redirect_url': reverse('main:login') # URL tujuan setelah sukses
+                'redirect_url': reverse('main:login')
             })
         else:
-            # Mengembalikan error validasi form
             return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
             
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)

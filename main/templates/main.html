@@ -17,9 +17,12 @@
     </div>
 
     <!-- Button to open modal -->
-    <button onclick="showModal()" class="add-product-btn items-center px-4 py-2 bg-white text-green-600 font-semibold outline outline-2 outline-green-600 outline-offset-[-2px] rounded-md hover:bg-green-600 hover:text-white transition-colors mb-4">
-      Add Product by AJAX
-    </button>
+    <div class="flex items-center gap-3 mb-4">
+      <button id="open-add-btn" onclick="openAddModal()" class="add-product-btn items-center px-4 py-2 bg-white text-green-600 font-semibold outline outline-2 outline-green-600 outline-offset-[-2px] rounded-md hover:bg-green-600 hover:text-white transition-colors">
+        + Add Product (AJAX)
+      </button>
+      <button id="refresh-btn" onclick="fetchProducts()" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100 transition">Refresh</button>
+    </div>
 
     <!-- Filter Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-gray-200 p-4">
@@ -85,6 +88,8 @@
     <!-- Product Grid -->
     <div id="grid" class="hidden grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5"></div>
 
+    {% include 'modal.html' %}
+
   </div>
 </div>
 
@@ -130,21 +135,12 @@ function renderProductCard(product) {
           Show Details
         </a>
         ${
-          CURRENT_USER_ID && Number(CURRENT_USER_ID) === Number(product.author_id)
+          CURRENT_USER_ID && Number(CURRENT_USER_ID) === Number(product.user_id)
             ? `
-              <a href="/edit/${product.id}/" 
-                 class="edit-product-btn flex-1 text-center border-2 border-yellow-500 text-yellow-600 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition">
-                Edit
-              </a>
-              <a href="/delete/${product.id}/" 
-                 class="flex-1 text-center border-2 border-red-600 text-red-600 py-2 rounded-lg hover:bg-red-600 hover:text-white transition"
-                 onclick="return confirm('Yakin mau hapus produk ini?');">
-                Delete
-              </a>`
+              <button onclick="openEditModal('${product.id}')" class="edit-product-btn flex-1 text-center border-2 border-yellow-500 text-yellow-600 py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition">Edit</button>
+              <button onclick="openDeleteModal('${product.id}')" class="flex-1 text-center border-2 border-red-600 text-red-600 py-2 rounded-lg hover:bg-red-600 hover:text-white transition">Delete</button>`
             : `
-              <button class="flex-1 text-center bg-[#9b0d0d] text-white py-2 rounded-lg hover:bg-[#7a0a0a] hover:text-white transition">
-                Add to Cart
-              </button>`
+              <button class="flex-1 text-center bg-[#9b0d0d] text-white py-2 rounded-lg hover:bg-[#7a0a0a] hover:text-white transition">Add to Cart</button>`
         }
       </div>
     </div>
@@ -168,12 +164,13 @@ async function fetchProducts() {
   } catch (err) {
     console.error(err);
     showSection({ error: true });
+    showToast('Failed to load products', 'error');
   }
 }
 
 function filterAndRender() {
   const filtered = activeFilter === 'my'
-    ? allProducts.filter(p => Number(p.author_id) === Number(CURRENT_USER_ID))
+    ? allProducts.filter(p => Number(p.user_id) === Number(CURRENT_USER_ID))
     : allProducts;
 
   if (filtered.length === 0) showSection({ empty: true });
@@ -195,8 +192,152 @@ showMyButton.addEventListener('click', e => {
   filterAndRender();
 });
 
-document.addEventListener('productAdded', () => {
-  fetchProducts();
+document.addEventListener('productAdded', () => { fetchProducts(); });
+
+// CSRF helper (if not already defined in base)
+function getCookie(name) {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+function getCsrfToken(){
+  // prefer hidden input token rendered in the page (form), fall back to cookie
+  const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+  if (el && el.value) return el.value;
+  return getCookie('csrftoken');
+}
+
+// Modal controls
+function openAddModal(){
+  document.getElementById('product-modal-title').textContent = 'Add Product';
+  document.getElementById('product-id').value = '';
+  document.getElementById('product-name').value = '';
+  document.getElementById('product-description').value = '';
+  document.getElementById('product-price').value = '';
+  document.getElementById('product-stock').value = '';
+  document.getElementById('product-category').value = '';
+  document.getElementById('product-thumbnail').value = '';
+  document.getElementById('product-modal').classList.remove('hidden');
+  document.getElementById('product-modal').classList.add('flex');
+}
+function closeProductModal(){ document.getElementById('product-modal').classList.add('hidden'); document.getElementById('product-modal').classList.remove('flex'); }
+
+async function openEditModal(id){
+  // find product in allProducts
+  const prod = allProducts.find(p => String(p.id) === String(id));
+  if (!prod) return showToast('Product not found', 'error');
+  document.getElementById('product-modal-title').textContent = 'Edit Product';
+  document.getElementById('product-id').value = prod.id;
+  document.getElementById('product-name').value = prod.name || '';
+  document.getElementById('product-description').value = prod.description || '';
+  document.getElementById('product-price').value = prod.price || '';
+  document.getElementById('product-stock').value = prod.stock || '';
+  document.getElementById('product-category').value = prod.category || '';
+  document.getElementById('product-thumbnail').value = prod.thumbnail || '';
+  document.getElementById('product-modal').classList.remove('hidden');
+  document.getElementById('product-modal').classList.add('flex');
+}
+
+function openDeleteModal(id){
+  document.getElementById('delete-modal').classList.remove('hidden');
+  document.getElementById('delete-modal').classList.add('flex');
+  const confirmBtn = document.getElementById('confirm-delete-btn');
+  confirmBtn.dataset.id = id;
+}
+function closeDeleteModal(){ document.getElementById('delete-modal').classList.add('hidden'); document.getElementById('delete-modal').classList.remove('flex'); }
+
+// Submit handler for add/edit
+document.getElementById('product-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const id = document.getElementById('product-id').value;
+  const formData = new FormData();
+  formData.append('name', document.getElementById('product-name').value);
+  formData.append('description', document.getElementById('product-description').value);
+  formData.append('price', document.getElementById('product-price').value);
+  formData.append('stock', document.getElementById('product-stock').value);
+  formData.append('category', document.getElementById('product-category').value);
+  formData.append('thumbnail', document.getElementById('product-thumbnail').value);
+
+  const csrftoken = getCsrfToken();
+
+  try{
+    ['name','description','price','stock','category','thumbnail'].forEach(f => {
+      const el = document.getElementById('error_' + f);
+      if (el) el.innerHTML = '';
+    });
+    if (!id){
+      // create
+      const url = "{% url 'main:add_product_ajax' %}";
+  const resp = await fetch(url, { method: 'POST', body: formData, headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' } });
+      const text = await resp.text();
+      if (!resp.ok) {
+        // try parse json for field errors
+        let parsed = null;
+        try { parsed = JSON.parse(text); } catch(e) { parsed = null; }
+        if (parsed && parsed.errors) {
+          for (const field in parsed.errors) {
+            const el = document.getElementById('error_' + field);
+            if (el) el.innerHTML = parsed.errors[field].join('<br>');
+          }
+          throw new Error('Validation error');
+        }
+        const errMsg = text || `Add failed (status ${resp.status})`;
+        throw new Error(errMsg);
+      }
+      closeProductModal();
+      showToast('Product added', 'success');
+      await fetchProducts();
+    } else {
+      // edit
+      const url = `/product/${id}/edit_ajax`;
+      const resp = await fetch(url, { method: 'POST', body: formData, headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' } });
+      let data = null;
+      try { data = await resp.json(); } catch(e){ /* ignore parse error */ }
+      if (!resp.ok) {
+        if (data && data.errors) {
+          for (const field in data.errors) {
+            const el = document.getElementById('error_' + field);
+            if (el) el.innerHTML = data.errors[field].join('<br>');
+          }
+          throw new Error('Validation error');
+        }
+        const errMsg = (data && (data.message || JSON.stringify(data))) || `Update failed (status ${resp.status})`;
+        throw new Error(errMsg);
+      }
+      closeProductModal();
+      showToast((data && data.message) ? data.message : 'Product updated', 'success');
+      await fetchProducts();
+    }
+  } catch(err){
+    console.error('Product form error:', err);
+    showToast(err.message || 'Operation failed', 'error');
+  }
+});
+
+// Delete confirm
+document.getElementById('confirm-delete-btn').addEventListener('click', async function(){
+  const id = this.dataset.id;
+  if (!id) return;
+  const csrftoken = getCsrfToken();
+  try{
+    const url = `/product/${id}/delete_ajax`;
+    const resp = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' } });
+    let data = null;
+    try { data = await resp.json(); } catch(e) {}
+    if (!resp.ok) {
+      const errMsg = (data && (data.message || JSON.stringify(data))) || `Delete failed (status ${resp.status})`;
+      throw new Error(errMsg);
+    }
+    closeDeleteModal();
+    showToast((data && data.message) ? data.message : 'Product deleted', 'success');
+    await fetchProducts();
+  } catch(err){
+    console.error('Delete error:', err);
+    showToast(err.message || 'Delete failed', 'error');
+  }
 });
 
 fetchProducts();
