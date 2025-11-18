@@ -45,6 +45,8 @@
                   {% endif %}">
           My Product
         </a>
+
+        <button id="sortBtn">Sort</button>
       </div>
 
       {% if user.is_authenticated %}
@@ -338,6 +340,18 @@ document.getElementById('confirm-delete-btn').addEventListener('click', async fu
     console.error('Delete error:', err);
     showToast(err.message || 'Delete failed', 'error');
   }
+});
+
+const sortButton = document.getElementById("sortBtn");
+
+sortButton.addEventListener('click', e => {
+  e.preventDefault();
+  const sorted = productList.sort((a, b) => a.name.localeCompare(b.name));
+  renderProducts(sorted);
+  showSection({grid: true})
+
+  sortAscending = !sortAscending
+
 });
 
 fetchProducts();
